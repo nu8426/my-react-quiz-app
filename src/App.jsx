@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import QuizStart from "./components/QuizStart/QuizStart";
+import QuestionCard from "./components/QuestionCard/QuestionCard";
+import ScoreSummary from "./components/ScoreSummary/ScoreSummary";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  const startQuiz = ({ category, difficulty, numQuestions }) => {
+    // Sample questions, 4 options each
+    const sampleQuestions = [
+      {
+        question: "What is the capital of France?",
+        correct_answer: "Paris",
+        incorrect_answers: ["Berlin", "Madrid", "Rome"],
+      },
+      {
+        question: "Which language runs in a web browser?",
+        correct_answer: "JavaScript",
+        incorrect_answers: ["Python", "C++", "Java"],
+      },
+    ];
+    setQuestions(sampleQuestions);
+    setQuizStarted(true);
+  };
+
+  const finishQuiz = (answers) => {
+    setUserAnswers(answers);
+    setQuizFinished(true);
+  };
+
+  const restartQuiz = () => {
+    setQuizStarted(false);
+    setQuizFinished(false);
+    setQuestions([]);
+    setUserAnswers([]);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6">
+        {!quizStarted && !quizFinished && <QuizStart onStart={startQuiz} />}
+        {quizStarted && !quizFinished && (
+          <QuestionCard questions={questions} onFinish={finishQuiz} />
+        )}
+        {quizFinished && (
+          <ScoreSummary
+            questions={questions}
+            answers={userAnswers}
+            onRestart={restartQuiz}
+          />
+        )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
-
-export default App
