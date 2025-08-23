@@ -1,64 +1,48 @@
-import { useState, useEffect } from "react";
-import QuestionText from "./QuestionText";
-import AnswerOptions from "./AnswerOptions";
-import NavigationButtons from "./NavigationButtons";
+import { useState } from "react";
 
 export default function QuestionCard({ questions, onFinish }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState([]);
-  const [timer, setTimer] = useState(30); // 30 seconds per question
+  const [answers, setAnswers] = useState([]);
 
   const currentQuestion = questions[currentIndex];
-  const options = [...currentQuestion.incorrect_answers, currentQuestion.correct_answer].sort();
-
-  // Countdown timer
-  useEffect(() => {
-    if (timer === 0) {
-      handleNext();
-      return;
-    }
-    const countdown = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    return () => clearInterval(countdown);
-  }, [timer]);
+  const options = [
+    ...currentQuestion.incorrect_answers,
+    currentQuestion.correct_answer,
+  ].sort(() => Math.random() - 0.5);
 
   const handleAnswer = (answer) => {
-    const updated = [...userAnswers];
-    updated[currentIndex] = answer;
-    setUserAnswers(updated);
-  };
+    const newAnswers = [...answers];
+    newAnswers[currentIndex] = answer;
+    setAnswers(newAnswers);
 
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
+    if (currentIndex + 1 < questions.length) {
       setCurrentIndex(currentIndex + 1);
-      setTimer(30);
     } else {
-      onFinish(userAnswers);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setTimer(30);
+      onFinish(newAnswers);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <QuestionText currentIndex={currentIndex} total={questions.length} text={currentQuestion.question} />
-      <p className="text-right text-sm text-gray-500 mb-2">Time: {timer}s</p>
-      <AnswerOptions
-        options={options}
-        selected={userAnswers[currentIndex]}
-        onSelect={handleAnswer}
+    <div>
+      <h3 className="text-xl font-semibold mb-4">
+        Question {currentIndex + 1}/{questions.length}
+      </h3>
+      <p
+        className="mb-4"
+        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
       />
-      <NavigationButtons
-        onPrev={handlePrev}
-        onNext={handleNext}
-        disablePrev={currentIndex === 0}
-        disableNext={!userAnswers[currentIndex] && timer > 0}
-        isLast={currentIndex === questions.length - 1}
-      />
+
+      <div className="space-y-2">
+        {options.map((option, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleAnswer(option)}
+            className="w-full text-left px-4 py-2 border rounded hover:bg-gray-100 transition"
+          >
+            <span dangerouslySetInnerHTML={{ __html: option }} />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

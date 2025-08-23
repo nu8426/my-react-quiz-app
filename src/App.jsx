@@ -8,7 +8,6 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState([]);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  // Start quiz and fetch questions from Open Trivia DB
   const startQuiz = async ({ category, difficulty, numQuestions }) => {
     const res = await fetch(
       `https://opentdb.com/api.php?amount=${numQuestions}&category=${category}&difficulty=${difficulty}&type=multiple`
@@ -26,14 +25,12 @@ export default function App() {
     setUserAnswers([]);
   };
 
-  // Finish quiz and store user answers
   const finishQuiz = (answers) => {
     setUserAnswers(answers);
     setQuizFinished(true);
-    setQuizStarted(false); // hide questions
+    setQuizStarted(false);
   };
 
-  // Restart quiz
   const restartQuiz = () => {
     setQuizStarted(false);
     setQuizFinished(false);
@@ -57,7 +54,7 @@ export default function App() {
             </p>
             <button
               onClick={restartQuiz}
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               Restart Quiz
             </button>
