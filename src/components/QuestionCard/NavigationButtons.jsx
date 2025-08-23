@@ -1,6 +1,6 @@
-export default function NavigationButtons({ onNext, onPrev, disableNext, disablePrev }) {
+export default function NavigationButtons({ onPrev, onNext, disablePrev, disableNext, isLast }) {
   return (
-    <div className="flex justify-between mt-6">
+    <div className="flex justify-between mt-4">
       <button
         onClick={onPrev}
         disabled={disablePrev}
@@ -11,9 +11,9 @@ export default function NavigationButtons({ onNext, onPrev, disableNext, disable
       <button
         onClick={onNext}
         disabled={disableNext}
-        className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
       >
-        Next
+        {isLast ? "Finish" : "Next"}
       </button>
     </div>
   );

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import QuizStart from "./components/QuizStart/QuizStart";
 import QuestionCard from "./components/QuestionCard/QuestionCard";
-import ScoreSummary from "./components/ScoreSummary/ScoreSummary";
 
 export default function App() {
   const [quizStarted, setQuizStarted] = useState(false);
@@ -9,29 +8,32 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState([]);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  const startQuiz = ({ category, difficulty, numQuestions }) => {
-    // Sample questions, 4 options each
-    const sampleQuestions = [
-      {
-        question: "What is the capital of France?",
-        correct_answer: "Paris",
-        incorrect_answers: ["Berlin", "Madrid", "Rome"],
-      },
-      {
-        question: "Which language runs in a web browser?",
-        correct_answer: "JavaScript",
-        incorrect_answers: ["Python", "C++", "Java"],
-      },
-    ];
-    setQuestions(sampleQuestions);
+  // Start quiz and fetch questions from Open Trivia DB
+  const startQuiz = async ({ category, difficulty, numQuestions }) => {
+    const res = await fetch(
+      `https://opentdb.com/api.php?amount=${numQuestions}&category=${category}&difficulty=${difficulty}&type=multiple`
+    );
+    const data = await res.json();
+    const formattedQuestions = data.results.map((q) => ({
+      question: q.question,
+      correct_answer: q.correct_answer,
+      incorrect_answers: q.incorrect_answers,
+    }));
+
+    setQuestions(formattedQuestions);
     setQuizStarted(true);
+    setQuizFinished(false);
+    setUserAnswers([]);
   };
 
+  // Finish quiz and store user answers
   const finishQuiz = (answers) => {
     setUserAnswers(answers);
     setQuizFinished(true);
+    setQuizStarted(false); // hide questions
   };
 
+  // Restart quiz
   const restartQuiz = () => {
     setQuizStarted(false);
     setQuizFinished(false);
@@ -47,11 +49,19 @@ export default function App() {
           <QuestionCard questions={questions} onFinish={finishQuiz} />
         )}
         {quizFinished && (
-          <ScoreSummary
-            questions={questions}
-            answers={userAnswers}
-            onRestart={restartQuiz}
-          />
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Quiz Finished!</h2>
+            <p className="mb-4">
+              You answered {userAnswers.filter(Boolean).length} out of{" "}
+              {questions.length} questions.
+            </p>
+            <button
+              onClick={restartQuiz}
+              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
+              Restart Quiz
+            </button>
+          </div>
         )}
       </div>
     </div>

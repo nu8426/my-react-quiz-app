@@ -1,68 +1,73 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
+import CategorySelector from "./CategorySelector";
+import DifficultySelector from "./DifficultySelector";
 
-export default function QuizStart({ onStart }) {
-  const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState(9); // default General Knowledge
+function QuizStart({ onStart }) {
+  const [category, setCategory] = useState("9");
   const [difficulty, setDifficulty] = useState("easy");
-  const [numQuestions, setNumQuestions] = useState(5);
+  const [numQuestions, setNumQuestions] = useState(5); // default 5
 
-  useEffect(() => {
-    async function fetchCategories() {
-      const res = await fetch("https://opentdb.com/api_category.php");
-      const data = await res.json();
-      setCategories(data.trivia_categories);
-    }
-    fetchCategories();
-  }, []);
-
-  const handleStart = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     onStart({ category, difficulty, numQuestions });
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-6 text-center">Start Quiz</h1>
+    <div className="max-w-xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
+      <h1 className="text-2xl font-bold mb-6 text-center text-indigo-700">
+        Start Your Quiz 🎯
+      </h1>
 
-      <label className="block mb-2 font-semibold">Category</label>
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="w-full border p-2 mb-4"
-      >
-        {categories.map((cat) => (
-          <option key={cat.id} value={cat.id}>
-            {cat.name}
-          </option>
-        ))}
-      </select>
+      <form onSubmit={handleSubmit}>
+        <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+          <tbody>
+            <tr className="bg-gray-50 hover:bg-gray-100 transition">
+              <td className="border px-4 py-3 font-semibold text-gray-700 w-1/3">
+                Choose Category:
+              </td>
+              <td className="border px-4 py-3">
+                <CategorySelector value={category} onChange={setCategory} />
+              </td>
+            </tr>
 
-      <label className="block mb-2 font-semibold">Difficulty</label>
-      <select
-        value={difficulty}
-        onChange={(e) => setDifficulty(e.target.value)}
-        className="w-full border p-2 mb-4"
-      >
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
+            <tr className="hover:bg-gray-50 transition">
+              <td className="border px-4 py-3 font-semibold text-gray-700">
+                Choose Difficulty:
+              </td>
+              <td className="border px-4 py-3">
+                <DifficultySelector value={difficulty} onChange={setDifficulty} />
+              </td>
+            </tr>
 
-      <label className="block mb-2 font-semibold">Number of Questions</label>
-      <input
-        type="number"
-        value={numQuestions}
-        min={1}
-        max={50}
-        onChange={(e) => setNumQuestions(e.target.value)}
-        className="w-20 border p-2 mb-4 text-center"
-      />
+            <tr className="bg-gray-50 hover:bg-gray-100 transition">
+              <td className="border px-4 py-3 font-semibold text-gray-700">
+                Number of Questions:
+              </td>
+              <td className="border px-4 py-3">
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={numQuestions} // default value set here
+                  onChange={(e) => setNumQuestions(Number(e.target.value))}
+                  className="w-full border rounded px-2 py-1 text-center"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-      <button
-        onClick={handleStart}
-        className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-      >
-        Start Quiz
-      </button>
+        <div className="mt-6 text-center">
+          <button
+            type="submit"
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
+            Start Quiz
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
+
+export default QuizStart;
