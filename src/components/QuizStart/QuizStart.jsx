@@ -12,9 +12,11 @@ export default function QuizStart({ onStart }) {
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-center">Start Your Quiz 🎯</h1>
+
       <div className="space-y-4">
+        {/* Category */}
         <div>
-          <label className="font-semibold block mb-1">Choose Category:</label>
+          <label className="font-semibold block mb-1">📚 Choose Category:</label>
           <select
             value={category}
             onChange={(e) => setCategory(Number(e.target.value))}
@@ -29,8 +31,9 @@ export default function QuizStart({ onStart }) {
           </select>
         </div>
 
+        {/* Difficulty */}
         <div>
-          <label className="font-semibold block mb-1">Choose Difficulty:</label>
+          <label className="font-semibold block mb-1">🎛️ Choose Difficulty:</label>
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
@@ -42,8 +45,9 @@ export default function QuizStart({ onStart }) {
           </select>
         </div>
 
+        {/* Number of Questions */}
         <div>
-          <label className="font-semibold block mb-1">Number of Questions:</label>
+          <label className="font-semibold block mb-1">🔢 Number of Questions:</label>
           <input
             type="number"
             min={1}
