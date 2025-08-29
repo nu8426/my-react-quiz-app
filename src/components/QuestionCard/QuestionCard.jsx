@@ -1,126 +1,111 @@
 import { useState, useEffect } from "react";
 
-export default function QuestionCard({ questions, onFinish }) {
+export default function QuestionCard({ questions, onAnswer, onFinish, answers }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
-  const [selected, setSelected] = useState(null);
+  const current = questions[currentIndex];
+  const allOptions = current
+    ? [...current.incorrect_answers, current.correct_answer].sort()
+    : [];
+
+  const selected = answers[currentIndex]?.selected || null;
   const [timeLeft, setTimeLeft] = useState(30);
 
-  const current = questions[currentIndex];
-  const allOptions = [...current.incorrect_answers, current.correct_answer].sort();
+  const noQuestions = !questions || questions.length === 0;
 
-  // Timer countdown
+  // Timer
   useEffect(() => {
+    if (noQuestions || !current) return;
+
+    setTimeLeft(30);
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
-          handleAutoSubmit();
-          return 0;
+          handleNext();
+          return 30;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
-  // Auto-submit if time runs out
-  const handleAutoSubmit = () => {
-    if (answers[currentIndex] === null) {
-      const updatedAnswers = [...answers];
-      updatedAnswers[currentIndex] = null;
-      setAnswers(updatedAnswers);
-      setSelected(null);
-    }
-  };
-
-  // Select or change answer
   const handleSelect = (option) => {
-    const updatedAnswers = [...answers];
-    updatedAnswers[currentIndex] = option;
-    setAnswers(updatedAnswers);
-    setSelected(option);
+    onAnswer(currentIndex, option); // update parent state
   };
 
-  // Go to next question
   const handleNext = () => {
-    if (currentIndex + 1 < questions.length) {
-      setCurrentIndex(currentIndex + 1);
-      setSelected(answers[currentIndex + 1]);
-      setTimeLeft(30);
-    } else {
-      onFinish(answers);
-    }
+    if (!answers[currentIndex]) return; // block if unanswered
+
+    if (currentIndex < questions.length - 1) setCurrentIndex((prev) => prev + 1);
+    else onFinish();
   };
 
-  // Go to previous question
   const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setSelected(answers[currentIndex - 1]);
-      setTimeLeft(30);
-    }
+    if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
+
+  if (noQuestions) return <div className="text-center mt-10">No questions available.</div>;
+  if (!current) return <div className="text-center mt-10">Loading question...</div>;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg space-y-6 max-w-xl mx-auto">
-      {/* Header: Question number + Timer */}
-      <div className="flex justify-between items-center text-sm text-gray-600">
-        <span>Question {currentIndex + 1} / {questions.length}</span>
-        <span>⏱️ Time Left: {timeLeft}s</span>
+    <div className="bg-white p-6 rounded-xl shadow-lg max-w-xl mx-auto space-y-6">
+      {/* Question Progress + Timer */}
+      <div className="flex justify-between text-sm text-gray-600">
+        <span>
+          Question {currentIndex + 1} / {questions.length}
+        </span>
+        <span>⏱️ {timeLeft}s</span>
       </div>
 
-      {/* Question Text */}
-      <h2 className="text-lg font-semibold">
-        {currentIndex + 1}.{" "}
-        <span dangerouslySetInnerHTML={{ __html: current.question }} />
-      </h2>
+      {/* Question */}
+      <h2
+        className="text-lg font-semibold"
+        dangerouslySetInnerHTML={{ __html: current.question }}
+      />
 
-      {/* Answer Options with Feedback */}
-      <div className="flex flex-col gap-4">
+      {/* Answer Options */}
+      <div className="flex flex-col gap-3">
         {allOptions.map((option) => {
-          const isCorrect = option === current.correct_answer;
           const isSelected = selected === option;
-          const hasAnswered = selected !== null || timeLeft === 0; // ✅ FIXED HERE
+          const isCorrect = option === current.correct_answer;
+          let bgClass = "bg-white hover:bg-gray-100";
 
-          let bg = "bg-gray-100 hover:bg-gray-200 active:scale-95 transition-colors duration-300";
-
-          if (hasAnswered) {
-            if (isSelected && isCorrect) bg = "bg-green-500 text-white";
-            else if (isSelected && !isCorrect) bg = "bg-red-500 text-white";
-            else if (isCorrect) bg = "bg-green-100 text-green-800 font-semibold";
-            else bg = "bg-gray-100 opacity-50";
+          if (selected) {
+            if (isSelected && isCorrect) bgClass = "bg-green-500 text-white";
+            else if (isSelected && !isCorrect) bgClass = "bg-red-500 text-white";
+            else if (isCorrect) bgClass = "bg-green-100 text-green-800 font-semibold";
+            else bgClass = "bg-gray-100 opacity-50";
           }
 
           return (
             <button
               key={option}
               onClick={() => handleSelect(option)}
-              disabled={hasAnswered}
-              className={`px-4 py-2 rounded border font-medium text-left ${bg}`}
+              className={`px-4 py-2 rounded border text-left ${bgClass}`}
               dangerouslySetInnerHTML={{ __html: option }}
             />
           );
         })}
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Navigation */}
       <div className="flex justify-between pt-4">
         <button
           onClick={handlePrevious}
           disabled={currentIndex === 0}
-          className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 disabled:opacity-50"
+          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
         >
           ⏮️ Previous
         </button>
-
         <button
           onClick={handleNext}
-          disabled={answers[currentIndex] === null && timeLeft > 0}
+          disabled={!answers[currentIndex]} // disable if unanswered
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          ⏭️ Next
+          {currentIndex < questions.length - 1 ? "⏭️ Next" : "✅ Submit Quiz"}
         </button>
       </div>
     </div>
